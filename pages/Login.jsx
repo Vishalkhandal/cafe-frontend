@@ -1,78 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
-import Navbar from '../components/Navbar';
+import { useState } from 'react';
+import { Link } from 'react-router';
+import { useAuth } from '../context/AuthContext';
 
 function Login() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const { loginUser, message } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  useEffect(() => {
-    reset();
-  }, [])
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
+  
   const reset = () => {
-    setFormData({
-      email: '',
-      password: '',
-    })
+    setEmail("")
+    setPassword("")
     setError("")
   }
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Login Submitted");
-
-    loginUser();
+    loginUser(email, password);
+    reset();
   };
 
-  const loginUser = async () => {
-    const url = "http://127.0.0.1:3000/loginUser";
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: formData.email, password: formData.password }),
-      })
-      if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`)
-      }
-      const data = await response.json();
-      console.log(data, "response data");
-      localStorage.setItem("token", data.token)
-
-      reset();
-      alert("User Login successfully!");
-      navigate("/");
-    } catch (error) {
-      setError('Failed to Login user');
-      console.error(error);
-    }
-  }
 
   return (
     <div>
-      <Navbar />
 
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex items-center justify-center h-[500px] bg-gray-100">
         <form
           onSubmit={handleSubmit}
           className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md space-y-4"
         >
-          {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
+          {message && (
+            <div className="text-red-500 text-sm text-center">{message.msg}</div>
           )}
           <h2 className="text-2xl font-bold text-center">Login</h2>
 
@@ -80,8 +39,8 @@ function Login() {
             type="email"
             name="email"
             placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
@@ -90,8 +49,8 @@ function Login() {
             type="password"
             name="password"
             placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
@@ -114,5 +73,4 @@ function Login() {
     </div>
   );
 }
-
 export default Login;

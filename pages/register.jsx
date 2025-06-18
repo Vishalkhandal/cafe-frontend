@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import Navbar from '../components/Navbar';
+import { useAuth } from '../context/AuthContext';
 
 function Register() {
+  const {registerUser, message} = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -40,44 +41,19 @@ function Register() {
       alert("Passwords do not match!");
       return;
     }
-    console.log("Form Submitted");
-
-    registerUser();
+    registerUser(formData.name, formData.email, formData.address, formData.password);
   };
 
-  const registerUser = async () => {
-    const url = "http://127.0.0.1:3000/registerUser";
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: formData.name, email: formData.email, password: formData.password, address: formData.password }),
-      })
-      if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`)
-      }
-
-      reset();
-      alert("User registered successfully!");
-    } catch (error) {
-      setError('Failed to register new user');
-      console.error(error);
-    }
-  }
 
   return (
     <div>
-      <Navbar />
-
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <form
           onSubmit={handleSubmit}
           className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md space-y-4"
         >
-          {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
+          {message && (
+            <div className="text-red-500 text-sm text-center">{message.msg}</div>
           )}
           <h2 className="text-2xl font-bold text-center">Register</h2>
 
