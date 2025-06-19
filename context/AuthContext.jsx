@@ -6,21 +6,12 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
 
     const navigate = useNavigate();
-    const [isAuthenticated, setIsAuthenticated] = useState(() => {
-        return !!localStorage.getItem('accessToken');
-    })
-    const [user, setUser] = useState(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            try {
-                return JSON.parse(storedUser);
-            } catch (error) {
-                console.log(`Failed to parse user from localStorage`, error);
-            }
-        }
-    });
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(() => {
+        return !!localStorage.getItem('accessToken');
+    });
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -87,7 +78,6 @@ export const AuthProvider = ({ children }) => {
                 localStorage.setItem("accessToken", data.accessToken)
                 localStorage.setItem("user", JSON.stringify(data.user));
                 setIsAuthenticated(true);
-                setUser(data.user);
                 alert("User Login successfully!");
                 navigate("/");
             }
@@ -106,7 +96,7 @@ export const AuthProvider = ({ children }) => {
     const getUser = async () => {
         const accessToken = localStorage.getItem('accessToken');
 
-        fetch('http://localhost:5000/api/auth/profile', {
+        fetch('http://localhost:3000/api/user/profile', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,

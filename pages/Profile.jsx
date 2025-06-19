@@ -12,6 +12,9 @@ function Profile() {
           <h2>User Name: {user.name}</h2>
           <h2>User Id: {user.id || user._id}</h2>
           <h2>User Email: {user.email}</h2>
+          <h2>User Address: {user.address}</h2>
+          <h2>User Created At: {user.createdAt}</h2>
+          <h2>User Updated At: {user.updatedAt}</h2>
         </>
       ) : (
         <p>No user data found. Please log in.</p>
