@@ -9,16 +9,11 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(() => {
-        return !!localStorage.getItem('accessToken');
-    });
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-    }, []);
+        getUser();
+    }, [])
 
     const registerUser = async (name, email, address, password) => {
         const url = "http://localhost:3000/api/auth/register"
@@ -32,8 +27,6 @@ export const AuthProvider = ({ children }) => {
             })
 
             const json = await response.json();
-            console.log(json);
-
             if (!response.ok) {
                 setMessage({
                     msg: json.msg,
@@ -44,7 +37,7 @@ export const AuthProvider = ({ children }) => {
             }
             setMessage(null);
             alert("User registered successfully!");
-            navigate('/');
+            navigate('/login');
         } catch (error) {
             console.log(error);
         }
@@ -58,7 +51,43 @@ export const AuthProvider = ({ children }) => {
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: 'include',
                 body: JSON.stringify({ email, password }),
+            })
+            const data = await response.json();
+
+            localStorage.setItem("token", data.token);
+
+            if (!response.ok) {
+                setMessage({
+                    msg: data.msg,
+                    status: response.status,
+                    statusText: response.statusText
+                })
+                throw new Error(`Response status: ${response.status} and msg: ${response.statusText}`);
+            }
+
+            setMessage(null);
+            alert("User Login successfully!");
+            await getUser();
+            navigate("/dashboard");
+
+        } catch (error) {
+            console.error("Login error:", error);
+            setIsAuthenticated(false);
+            setUser(null);
+        }
+    }
+
+    const logoutUser = async () => {
+        const url = "http://localhost:3000/api/auth/logout";
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: 'include',
             })
             const data = await response.json();
 
@@ -70,51 +99,51 @@ export const AuthProvider = ({ children }) => {
                 })
                 throw new Error(`Response status: ${response.status} and msg: ${response.statusText}`);
             }
+
+            localStorage.removeItem("token");
             setMessage(null);
-            if (!data) {
-                navigate('/login');
-            } else {
-                console.log("response data on loginUser", data);
-                localStorage.setItem("accessToken", data.accessToken)
-                localStorage.setItem("user", JSON.stringify(data.user));
-                setIsAuthenticated(true);
-                alert("User Login successfully!");
-                navigate("/");
-            }
+            setUser(null);
+            setIsAuthenticated(false);
+            alert("User Logout successfully!");
+            navigate("/login");
         } catch (error) {
-            console.error(error);
+            console.log("Logout error:", error)
         }
     }
 
-    const logoutUser = async () => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('user');
-        setIsAuthenticated(false);
-        navigate('/login');
-    }
-
     const getUser = async () => {
-        const accessToken = localStorage.getItem('accessToken');
+        const token = localStorage.getItem("token");
 
-        fetch('http://localhost:3000/api/user/profile', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            }
-        })
-            .then(res => res.json())
-            .then(data => {
-                console.log("Protected data:", data);
-            })
-            .catch(err => {
-                console.error("Unauthorized or error:", err);
+        try {
+            const response = await fetch('http://localhost:3000/api/user', {
+                method: 'GET',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json', 
+                },
+                credentials: 'include'
             });
 
+            if (!response.ok) {
+                throw new Error("Failed to fetch user");
+            }
+
+            const data = await response.json();
+            console.log("getUser data:", data);
+            setUser(data);
+            setIsAuthenticated(true);
+            
+        } catch (error) {
+            console.warn("getUser error:", error.message);
+            setUser(null);
+            setIsAuthenticated(false);
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
-        <AuthContext.Provider value={{ registerUser, loginUser, logoutUser, isAuthenticated, user, message, loading, getUser }}>
+        <AuthContext.Provider value={{ registerUser, loginUser, logoutUser, getUser, user, isAuthenticated, loading, message }}>
             {children}
         </AuthContext.Provider>
     )

@@ -1,16 +1,17 @@
-import React from 'react'
-import { useAuth } from '../context/AuthContext'
-import { Navigate, Outlet } from 'react-router'
+import { Navigate, Outlet } from "react-router";
+import { useAuth } from "../context/AuthContext";
 
-function ProtectedRoute({ children, redirectTo = "/login" }) {
-    const { isAuthenticated } = useAuth()
-    
-    if(!isAuthenticated) {
-        return <Navigate to={redirectTo} replace />
-    }
-    return (
-        children ? children : <Outlet />    
-  )
-}
+const ProtectedRoute = () => {
+    const { isAuthenticated, loading } = useAuth();
 
-export default ProtectedRoute   
+    if (loading) return <p>Loading...</p>;
+    return isAuthenticated ? (
+        <>
+            <div className='flex flex-col min-h-screen'>
+                <Outlet />
+            </div >
+        </>
+    ) : <Navigate to="/" />;
+};
+
+export default ProtectedRoute;

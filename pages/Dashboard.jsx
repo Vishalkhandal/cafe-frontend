@@ -1,18 +1,31 @@
-import React from 'react'
+import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext'
+import { useEffect } from 'react';
 
 function Dashboard() {
-  const {getUser} = useAuth();
-  const handleClick = () => {
-    return getUser();
-  }
+  const { isAuthenticated, user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if(!loading, !isAuthenticated) {
+      navigate('/login');
+    }
+  }, [loading, isAuthenticated, navigate])
+  
+  if (loading) return <p>Loading...</p>
+
+  if(!user) return <p>user not found</p>;
+
   return (
     <>
-    <div>Dashboard</div>
-    <h1>Click Get User button to get the user data</h1>
-    <button onClick={handleClick} className='bg-red-900 px-2 py-2 text-white rounded'>Get User</button>
+      <h1>Welcome to {user.name}</h1>
+      <h2>User Id: {user.id || user._id}</h2>
+      <h2>User Email: {user.email}</h2>
+      <h2>User Address: {user.address}</h2>
+      <h2>User Created At: {user.createdAt}</h2>
+      <h2>User Updated At: {user.updatedAt}</h2>
     </>
-  )
+  );
 }
 
 export default Dashboard

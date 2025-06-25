@@ -1,5 +1,4 @@
-import React from 'react';
-import { Link, NavLink } from 'react-router'; 
+import { Link, NavLink } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { FaUserCircle } from 'react-icons/fa';
 
@@ -15,13 +14,18 @@ function Navbar() {
             {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
                     <NavLink
-                        to="/profile"
+                        to=""
                         className="flex items-center gap-2 text-white px-4 py-2 hover:bg-gray-600 rounded transition"
                     >
                         <FaUserCircle className="text-xl" />
                         <span className="font-semibold">{user?.name}</span>
                     </NavLink>
-
+                    <NavLink
+                        to="/products"
+                        className="bg-white text-gray-700 px-4 py-2 rounded hover:bg-gray-100 font-semibold transition"
+                    >
+                        Products
+                    </NavLink>
                     <NavLink
                         to="/dashboard"
                         className="bg-white text-gray-700 px-4 py-2 rounded hover:bg-gray-100 font-semibold transition"
